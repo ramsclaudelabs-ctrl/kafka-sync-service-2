@@ -1,0 +1,60 @@
+replicaCount: 4                # = #partitions in contacts.raw.v1
+
+image:
+  repository: myacr.azurecr.io/kafka-contacts-service
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: "2"
+    memory: 1Gi
+
+env:
+  APP_ENV: prod
+  KAFKA_LISTENER_CONCURRENCY: "4"
+  CONTACTS_SOURCE_TOPIC: contacts.raw.v1
+  CONTACTS_SINK_TOPIC: contacts.projected.v1
+  CONTACTS_DLQ_TOPIC: contacts.projected.v1.DLQ
+  KAFKA_SECURITY_PROTOCOL: SASL_SSL
+  KAFKA_SASL_MECHANISM: PLAIN
+  KAFKA_CONSUMER_GROUP: contacts-projection-svc
+
+secretProviderClass:
+  enabled: true
+  name: contacts-kv
+  keyvaultName: kafka-platform-kv
+  tenantId: "<tenant-id>"
+  userAssignedIdentityID: "<managed-identity-clientId>"
+  objects:
+    - objectName: kafka-bootstrap-servers
+      objectAlias: KAFKA_BOOTSTRAP_SERVERS
+    - objectName: kafka-sasl-jaas-config
+      objectAlias: KAFKA_SASL_JAAS_CONFIG
+    - objectName: schema-registry-url
+      objectAlias: SCHEMA_REGISTRY_URL
+    - objectName: schema-registry-user-info
+      objectAlias: SCHEMA_REGISTRY_USER_INFO
+
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    initialDelaySeconds: 30
+  readiness:
+    path: /actuator/health/readiness
+    initialDelaySeconds: 10
+
+service:
+  port: 8080
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 8
+  metric:
+    type: External
+    name: kafka_consumer_records_lag_max
+    targetAverageValue: "5000"

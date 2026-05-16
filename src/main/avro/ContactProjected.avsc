@@ -1,0 +1,18 @@
+{
+  "namespace": "com.example.contacts.avro",
+  "type": "record",
+  "name": "ContactProjected",
+  "doc": "Subset of ContactRaw published downstream. PII fields (phone, mobile, DOB, secondary email) are dropped. Email is kept because it is the join key for downstream MDM; mask if your governance differs.",
+  "fields": [
+    { "name": "contactId",          "type": "string" },
+    { "name": "accountId",          "type": ["null","string"], "default": null },
+    { "name": "fullName",           "type": "string",                                "doc": "firstName + ' ' + lastName." },
+    { "name": "title",              "type": ["null","string"], "default": null },
+    { "name": "email",              "type": "string" },
+    { "name": "countryCode",        "type": ["null","string"], "default": null,    "doc": "From address.countryCode if present." },
+    { "name": "preferredLanguage",  "type": ["null","string"], "default": null },
+    { "name": "marketingOptIn",     "type": "boolean", "default": false },
+    { "name": "updatedAt",          "type": { "type":"long", "logicalType":"timestamp-millis" } },
+    { "name": "sourceSystem",       "type": "string" }
+  ]
+}

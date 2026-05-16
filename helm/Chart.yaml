@@ -1,0 +1,9 @@
+apiVersion: v2
+name: contacts-service
+description: Real-time Avro field-projection service for Contacts
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+maintainers:
+  - name: Contacts domain team
+    email: contacts-team@example.com

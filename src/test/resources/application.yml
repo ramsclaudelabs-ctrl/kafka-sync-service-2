@@ -1,0 +1,26 @@
+spring:
+  kafka:
+    bootstrap-servers: ${spring.embedded.kafka.brokers:localhost:9092}
+    properties:
+      schema.registry.url: mock://test
+      security.protocol: PLAINTEXT
+    consumer:
+      group-id: contacts-test
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      properties:
+        specific.avro.reader: true
+    producer:
+      acks: all
+      properties:
+        enable.idempotence: true
+    listener:
+      concurrency: 2
+      ack-mode: MANUAL_IMMEDIATE
+app:
+  env: test
+  kafka:
+    topics:
+      source: contacts.raw.v1
+      sink:   contacts.projected.v1
+      dlq:    contacts.projected.v1.DLQ

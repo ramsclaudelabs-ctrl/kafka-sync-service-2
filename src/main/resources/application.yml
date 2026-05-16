@@ -1,0 +1,73 @@
+spring:
+  application:
+    name: kafka-contacts-service
+  threads:
+    virtual:
+      enabled: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    properties:
+      schema.registry.url: ${SCHEMA_REGISTRY_URL:http://localhost:8081}
+      security.protocol: ${KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
+      sasl.mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
+      sasl.jaas.config: ${KAFKA_SASL_JAAS_CONFIG:}
+      basic.auth.credentials.source: USER_INFO
+      basic.auth.user.info: ${SCHEMA_REGISTRY_USER_INFO:}
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP:contacts-projection-svc}
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      max-poll-records: 500
+      fetch-min-size: 65536
+      fetch-max-wait: 100ms
+      properties:
+        max.poll.interval.ms: 300000
+        session.timeout.ms: 30000
+        heartbeat.interval.ms: 3000
+        partition.assignment.strategy: org.apache.kafka.clients.consumer.CooperativeStickyAssignor
+        specific.avro.reader: true
+    producer:
+      acks: all
+      retries: 2147483647
+      properties:
+        enable.idempotence: true
+        compression.type: zstd
+        linger.ms: 20
+        batch.size: 65536
+        buffer.memory: 67108864
+        max.in.flight.requests.per.connection: 5
+        delivery.timeout.ms: 120000
+        request.timeout.ms: 30000
+    listener:
+      concurrency: ${KAFKA_LISTENER_CONCURRENCY:4}
+      ack-mode: MANUAL_IMMEDIATE
+      observation-enabled: true
+
+app:
+  env: ${APP_ENV:local}
+  kafka:
+    topics:
+      source: ${CONTACTS_SOURCE_TOPIC:contacts.raw.v1}
+      sink:   ${CONTACTS_SINK_TOPIC:contacts.projected.v1}
+      dlq:    ${CONTACTS_DLQ_TOPIC:contacts.projected.v1.DLQ}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,env
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO
+    com.example.contacts: INFO
+    org.apache.kafka: WARN
+    org.springframework.kafka: INFO

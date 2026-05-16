@@ -1,0 +1,36 @@
+{
+  "namespace": "com.example.contacts.avro",
+  "type": "record",
+  "name": "ContactRaw",
+  "doc": "Full Contact record emitted by the upstream CRM.",
+  "fields": [
+    { "name": "contactId",          "type": "string",                                "doc": "Globally unique contact id (UUID)." },
+    { "name": "accountId",          "type": ["null", "string"], "default": null,     "doc": "Owning account id (FK)." },
+    { "name": "firstName",          "type": "string" },
+    { "name": "lastName",           "type": "string" },
+    { "name": "middleName",         "type": ["null","string"], "default": null },
+    { "name": "salutation",         "type": ["null","string"], "default": null },
+    { "name": "title",              "type": ["null","string"], "default": null,      "doc": "Job title." },
+    { "name": "email",              "type": "string",                                "doc": "Primary email. PII." },
+    { "name": "secondaryEmail",     "type": ["null","string"], "default": null,      "doc": "PII. Stripped before downstream." },
+    { "name": "phone",              "type": ["null","string"], "default": null,      "doc": "PII. Stripped before downstream." },
+    { "name": "mobile",             "type": ["null","string"], "default": null,      "doc": "PII. Stripped before downstream." },
+    { "name": "dateOfBirth",        "type": ["null",{ "type":"int", "logicalType":"date" }], "default": null,
+                                                                                      "doc": "PII. Stripped before downstream." },
+    { "name": "address",            "type": ["null", {
+        "type":"record", "name":"ContactAddress",
+        "fields":[
+          { "name":"line1",       "type":"string" },
+          { "name":"city",        "type":"string" },
+          { "name":"state",       "type": ["null","string"], "default": null },
+          { "name":"postalCode",  "type":"string" },
+          { "name":"countryCode", "type":"string" }
+        ]
+      }], "default": null },
+    { "name": "preferredLanguage",  "type": ["null","string"], "default": null,      "doc": "ISO 639-1." },
+    { "name": "marketingOptIn",     "type": "boolean", "default": false },
+    { "name": "createdAt",          "type": { "type":"long", "logicalType":"timestamp-millis" } },
+    { "name": "updatedAt",          "type": { "type":"long", "logicalType":"timestamp-millis" } },
+    { "name": "sourceSystem",       "type": "string" }
+  ]
+}
